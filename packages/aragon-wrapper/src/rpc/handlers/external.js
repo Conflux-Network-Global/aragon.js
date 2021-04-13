@@ -3,6 +3,7 @@ import { delay, filter } from 'rxjs/operators'
 import { getConfiguration } from '../../configuration'
 import * as configurationKeys from '../../configuration/keys'
 import { getEventNames } from '../../utils/events'
+const MAX_GAP = 1000 - 1
 
 export function call (request, proxy, wrapper) {
   const web3 = wrapper.web3
@@ -67,6 +68,8 @@ export function events (request, proxy, wrapper) {
     eventOptions.fromBlock = proxy.initializationBlock
   }
 
+  console.log("wwww external events", request)
+
   let eventSource
   if (eventNames.length === 1) {
     // Get a specific event or all events unfiltered
@@ -101,6 +104,8 @@ export function pastEvents (request, proxy, wrapper) {
     address
   )
 
+  console.log("wwww external pastEvents", request)
+
   // `external_past_events` RPC compatibility with aragonAPI versions:
   //   - aragonAPIv2: `'external_past_events', [address, jsonInterface, eventNames, eventOptions]`
   //   - aragonAPIv1: `'external_past_events', [address, jsonInterface, eventOptions]`
@@ -120,17 +125,50 @@ export function pastEvents (request, proxy, wrapper) {
     eventOptions.fromBlock = proxy.initializationBlock
   }
 
-  // The `from`s only unpack the returned Promises (and not the array inside them!)
-  if (eventNames.length === 1) {
-    // Get a specific event or all events unfiltered
-    return from(
-      contract.getPastEvents(eventNames[0], eventOptions)
-    )
+  const blockDiff = eventOptions.toBlock - eventOptions.fromBlock
+
+  if (blockDiff > MAX_GAP) {
+    const chunks = Math.floor(blockDiff / MAX_GAP)
+    const lastChunk = blockDiff % MAX_GAP
+    const firstFromBlock = eventOptions.fromBlock - ((chunks * MAX_GAP) + lastChunk)
+
+    const o = [
+      ...[...Array(chunks)].map((_, i) => ({
+        ...eventOptions,
+        fromBlock: firstFromBlock + ((i + 1) * MAX_GAP),
+        toBlock: firstFromBlock + ((i + 1) * MAX_GAP) + MAX_GAP
+      })),
+      {
+        ...eventOptions,
+        fromBlock: eventOptions.fromBlock - lastChunk
+      }]
+
+    // The `from`s only unpack the returned Promises (and not the array inside them!)
+    if (eventNames.length === 1) {
+      // Get a specific event or all events unfiltered
+      return from(...o.map((opts) =>
+        contract.getPastEvents(eventNames[0], opts)))
+    } else {
+      // Get all events and filter ourselves
+      return from(...o.map((opts) =>
+          contract.getPastEvents('allEvents', opts)
+            .then(events => events.filter(event => eventNames.includes(event.event)))
+        )
+      )
+    }
   } else {
-    // Get all events and filter ourselves
-    return from(
-      contract.getPastEvents('allEvents', eventOptions)
-        .then(events => events.filter(event => eventNames.includes(event.event)))
-    )
+    // The `from`s only unpack the returned Promises (and not the array inside them!)
+    if (eventNames.length === 1) {
+      // Get a specific event or all events unfiltered
+      return from(
+        contract.getPastEvents(eventNames[0], eventOptions),
+      )
+    } else {
+      // Get all events and filter ourselves
+      return from(
+        contract.getPastEvents('allEvents', eventOptions)
+          .then(events => events.filter(event => eventNames.includes(event.event)))
+      )
+    }
   }
 }
