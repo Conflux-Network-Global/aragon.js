@@ -1,8 +1,10 @@
-import { fromEvent, from } from 'rxjs'
+import { fromEvent, from, merge } from 'rxjs'
 import { delay, filter } from 'rxjs/operators'
 import { getConfiguration } from '../../configuration'
 import * as configurationKeys from '../../configuration/keys'
 import { getEventNames } from '../../utils/events'
+
+const MAX_GAP = 1000 - 1
 
 export default class ContractProxy {
   constructor (address, jsonInterface, web3, { initializationBlock = 0 } = {}) {
@@ -13,6 +15,29 @@ export default class ContractProxy {
     )
     this.web3 = web3
     this.initializationBlock = initializationBlock
+  }
+
+  chunkOptions(blockDiff, options) {
+    const chunks = Math.floor(blockDiff / MAX_GAP)
+    const lastChunk = blockDiff % MAX_GAP
+    const firstFromBlock = options.fromBlock
+
+    console.log("chunkOptions", chunks, lastChunk, blockDiff, firstFromBlock, options)
+
+    const chunkedOptions = [
+      ...[...Array(chunks)].map((_, i) => ({
+        ...options,
+        fromBlock: firstFromBlock + (i * MAX_GAP),
+        toBlock: firstFromBlock + (i * MAX_GAP) + MAX_GAP
+      })),
+      {
+        ...options,
+        fromBlock: options.toBlock - lastChunk
+      }]
+
+    console.log(chunkedOptions.map(l => ({ from: l.fromBlock, to: l.toBlock, delta: l.toBlock - l.fromBlock })))
+
+    return chunkedOptions
   }
 
   /**
@@ -27,18 +52,37 @@ export default class ContractProxy {
     options.fromBlock = options.fromBlock || this.initializationBlock
     eventNames = getEventNames(eventNames)
 
-    // The `from`s only unpack the returned Promises (and not the array inside them!)
-    if (eventNames.length === 1) {
-      // Get a specific event or all events unfiltered
-      return from(
-        this.contract.getPastEvents(eventNames[0], options)
-      )
+    const blockDiff = options.toBlock - options.fromBlock
+
+    if (blockDiff > MAX_GAP) {
+      const chunkedOptions = this.chunkOptions(blockDiff, options)
+      // The `from`s only unpack the returned Promises (and not the array inside them!)
+      if (eventNames.length === 1) {
+        // Get a specific event or all events unfiltered
+        return merge(...chunkedOptions.map((opts) =>
+          this.contract.getPastEvents(eventNames[0], opts)))
+      } else {
+        // Get all events and filter ourselves
+        return merge(...chunkedOptions.map((opts) =>
+            this.contract.getPastEvents('allEvents', opts)
+              .then(events => events.filter(event => eventNames.includes(event.event)))
+          )
+        )
+      }
     } else {
-      // Get all events and filter ourselves
-      return from(
-        this.contract.getPastEvents('allEvents', options)
-          .then(events => events.filter(event => eventNames.includes(event.event)))
-      )
+      // The `from`s only unpack the returned Promises (and not the array inside them!)
+      if (eventNames.length === 1) {
+        // Get a specific event or all events unfiltered
+        return from(
+          this.contract.getPastEvents(eventNames[0], options),
+        )
+      } else {
+        // Get all events and filter ourselves
+        return from(
+          this.contract.getPastEvents('allEvents', options)
+            .then(events => events.filter(event => eventNames.includes(event.event)))
+        )
+      }
     }
   }
 
@@ -54,21 +98,44 @@ export default class ContractProxy {
     options.fromBlock = options.fromBlock || this.initializationBlock
     eventNames = getEventNames(eventNames)
 
+    const blockDiff = options.toBlock - options.fromBlock
     let eventSource
-    if (eventNames.length === 1) {
-      // Get a specific event or all events unfiltered
-      eventSource = fromEvent(
-        this.contract.events[eventNames[0]](options),
-        'data'
-      )
+
+    if (blockDiff > MAX_GAP) {
+      const chunkedOptions = this.chunkOptions(blockDiff, options)
+      if (eventNames.length === 1) {
+        // Get a specific event or all events unfiltered
+        eventSource = merge(
+          ...chunkedOptions.map((opts) => fromEvent(
+            this.contract.events[eventNames[0]](opts),
+            'data'
+          )))
+      } else {
+        // Get all events and filter ourselves
+        eventSource = merge(
+          ...chunkedOptions.map((opts) => fromEvent(
+            this.contract.events.allEvents(opts),
+            'data'
+            ).pipe(
+            filter((event) => eventNames.includes(event.event)))
+          ))
+      }
     } else {
-      // Get all events and filter ourselves
-      eventSource = fromEvent(
-        this.contract.events.allEvents(options),
-        'data'
-      ).pipe(
-        filter((event) => eventNames.includes(event.event))
-      )
+      if (eventNames.length === 1) {
+        // Get a specific event or all events unfiltered
+        eventSource = fromEvent(
+          this.contract.events[eventNames[0]](options),
+          'data'
+        )
+      } else {
+        // Get all events and filter ourselves
+        eventSource = fromEvent(
+          this.contract.events.allEvents(options),
+          'data'
+        ).pipe(
+          filter((event) => eventNames.includes(event.event))
+        )
+      }
     }
 
     const eventDelay = getConfiguration(configurationKeys.SUBSCRIPTION_EVENT_DELAY) || 0
