@@ -80,7 +80,7 @@ export function events (request, proxy, wrapper) {
   } else {
     // Get all events and filter ourselves
     eventSource = fromEvent(
-      this.contract.events.allEvents(eventOptions),
+      contract.events.allEvents(eventOptions),
       'data'
     ).pipe(
       filter((event) => eventNames.includes(event.event))
