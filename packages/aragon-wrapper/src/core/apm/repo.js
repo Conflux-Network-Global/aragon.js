@@ -22,7 +22,7 @@ export async function getRepoLatestVersion (repoProxy) {
   const { contentURI, contractAddress, semanticVersion } = await repoProxy.call('getLatest')
   return {
     contractAddress,
-    contentURI: hexToAscii(contentURI),
+    contentURI: contentURI ? hexToAscii(contentURI) : "",
     version: semanticVersion.join('.')
   }
 }
@@ -36,7 +36,7 @@ export async function getRepoLatestVersionForContract (repoProxy, appContractAdd
 
   return {
     contractAddress,
-    contentURI: hexToAscii(contentURI),
+    contentURI: contentURI ? hexToAscii(contentURI) : "",
     version: semanticVersion.join('.')
   }
 }
@@ -45,7 +45,7 @@ export async function getRepoVersionById (repoProxy, versionId) {
   const { contentURI, contractAddress, semanticVersion } = await repoProxy.call('getByVersionId', versionId)
   return {
     contractAddress,
-    contentURI: hexToAscii(contentURI),
+    contentURI: contentURI ? hexToAscii(contentURI) : "",
     version: semanticVersion.join('.'),
     // Keeping this as a string makes comparisons a bit easier down the line
     versionId: versionId.toString()
