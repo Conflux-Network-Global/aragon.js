@@ -68,8 +68,6 @@ export function events (request, proxy, wrapper) {
     eventOptions.fromBlock = proxy.initializationBlock
   }
 
-  console.log("wwww external events", request)
-
   let eventSource
   if (eventNames.length === 1) {
     // Get a specific event or all events unfiltered
