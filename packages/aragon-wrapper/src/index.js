@@ -234,8 +234,7 @@ export default class Aragon {
     const CHANGE_PERMISSION_MANAGER_EVENT = 'ChangePermissionManager'
 
     const ACL_CACHE_KEY = getCacheKey(aclAddress, 'acl')
-
-    const REORG_SAFETY_BLOCK_AGE = 100
+    const REORG_SAFETY_BLOCK_AGE = 10
 
     const currentBlock = await this.web3.eth.getBlockNumber()
     const cacheBlockHeight = Math.max(currentBlock - REORG_SAFETY_BLOCK_AGE, 0) // clamp to 0 for safety
@@ -678,7 +677,9 @@ export default class Aragon {
             //   - Notifications for newly published versions
             //
             // Reduce this with the cached version information to emit version updates for the repo.
-            return repoProxy.events('NewVersion').pipe(
+            const currentBlock = await this.web3.eth.getBlockNumber()
+
+            return repoProxy.events('NewVersion', { toBlock: currentBlock }).pipe(
               // Project each event to a new version info object, one at a time
               concatMap(async (event) => {
                 const { versionId: eventVersionId } = event.returnValues
