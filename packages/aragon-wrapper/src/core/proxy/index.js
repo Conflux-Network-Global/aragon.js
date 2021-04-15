@@ -156,7 +156,7 @@ export default class ContractProxy {
   }
 
   async updateInitializationBlock () {
-    const initBlock = await this.contract.methods.getInitializationBlock().call()
+    const initBlock = await this.contract.methods.getInitializationEpoch().call()
     this.initializationBlock = initBlock
   }
 }
