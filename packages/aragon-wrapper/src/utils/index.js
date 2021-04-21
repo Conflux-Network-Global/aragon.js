@@ -62,11 +62,33 @@ export function makeProxy (address, interfaceName, web3, options) {
 
 const appProxyEventsAbi = getAbi('aragon/AppProxy').filter(({ type }) => type === 'event')
 export function makeProxyFromAppABI (address, appAbi, web3, options) {
+  // move the original hack to here
+  // todo: remove asap!
+  appAbi.push({
+    constant: true,
+    inputs: [],
+    name: 'getInitializationEpoch',
+    outputs: [{ name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
+  })
   const appAbiWithProxyEvents = [].concat(appAbi, appProxyEventsAbi)
   return makeProxyFromABI(address, appAbiWithProxyEvents, web3, options)
 }
 
 export function makeProxyFromABI (address, abi, web3, options) {
+  // move the original hack to here
+  // todo: remove asap!
+  abi.push({
+    constant: true,
+    inputs: [],
+    name: 'getInitializationEpoch',
+    outputs: [{ name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
+  })
   return new ContractProxy(address, abi, web3, options)
 }
 

@@ -22,7 +22,7 @@ export default class ContractProxy {
     const lastChunk = blockDiff % MAX_GAP
     const firstFromBlock = options.fromBlock
 
-    console.log("chunkOptions", chunks, lastChunk, blockDiff, firstFromBlock, options)
+    // console.log("chunkOptions", chunks, lastChunk, blockDiff, firstFromBlock, options)
 
     const chunkedOptions = [
       ...[...Array(chunks)].map((_, i) => ({
@@ -35,7 +35,7 @@ export default class ContractProxy {
         fromBlock: options.toBlock - lastChunk
       }]
 
-    console.log(chunkedOptions.map(l => ({ from: l.fromBlock, to: l.toBlock, delta: l.toBlock - l.fromBlock })))
+    // console.log(chunkedOptions.map(l => ({ from: l.fromBlock, to: l.toBlock, delta: l.toBlock - l.fromBlock })))
 
     return chunkedOptions
   }
@@ -157,6 +157,6 @@ export default class ContractProxy {
 
   async updateInitializationBlock () {
     const initBlock = await this.contract.methods.getInitializationEpoch().call()
-    this.initializationBlock = initBlock
+    this.initializationBlock = Number(initBlock)
   }
 }

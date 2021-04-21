@@ -1114,6 +1114,19 @@ export default class Aragon {
     // TODO: handle undefined (no proxy found), otherwise when calling app.proxyAddress next, it will throw
     const appProxy = makeProxyFromAppABI(app.proxyAddress, app.abi, this.web3)
 
+    // move the original hack to here
+    // todo: remove asap!
+    app.abi.push({
+      constant: true,
+      inputs: [],
+      name: 'getInitializationEpoch',
+      outputs: [{ name: '', type: 'uint256' }],
+      payable: false,
+      stateMutability: 'view',
+      type: 'function'
+    })
+
+    // console.trace(app.proxyAddress, app.abi)
     await appProxy.updateInitializationBlock()
 
     // Step 2: Associate app with running context
