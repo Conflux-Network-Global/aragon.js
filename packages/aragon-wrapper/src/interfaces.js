@@ -1,17 +1,17 @@
 import { apmAppId } from './utils/apps'
 
 // ABIs
-import abiAragonACL from '@aragon/os/abi/ACL'
-import abiAragonAppProxy from '@aragon/os/abi/AppProxyBase'
-import abiAragonERCProxy from '@aragon/os/abi/ERCProxy'
-import abiAragonForwarder from '@aragon/os/abi/IForwarder'
-import abiAragonForwarderFee from '@aragon/os/abi/IForwarderFee'
-import abiAragonKernel from '@aragon/os/abi/Kernel'
-import abiAragonEVMScriptRegistry from '@aragon/os/abi/EVMScriptRegistry'
-import abiERC20 from '@aragon/os/abi/ERC20'
-import abiApmRegistry from '@aragon/os/abi/APMRegistry'
-import abiApmRepo from '@aragon/os/abi/Repo'
-import abiApmEnsSubdomainRegistrar from '@aragon/os/abi/ENSSubdomainRegistrar'
+import abiAragonACL from '@conflux-/aragon-os/abi/ACL'
+import abiAragonAppProxy from '@conflux-/aragon-os/abi/AppProxyBase'
+import abiAragonERCProxy from '@conflux-/aragon-os/abi/ERCProxy'
+import abiAragonForwarder from '@conflux-/aragon-os/abi/IForwarder'
+import abiAragonForwarderFee from '@conflux-/aragon-os/abi/IForwarderFee'
+import abiAragonKernel from '@conflux-/aragon-os/abi/Kernel'
+import abiAragonEVMScriptRegistry from '@conflux-/aragon-os/abi/EVMScriptRegistry'
+import abiERC20 from '@conflux-/aragon-os/abi/ERC20'
+import abiApmRegistry from '@conflux-/aragon-os/abi/APMRegistry'
+import abiApmRepo from '@conflux-/aragon-os/abi/Repo'
+import abiApmEnsSubdomainRegistrar from '@conflux-/aragon-os/abi/ENSSubdomainRegistrar'
 
 // Artifacts
 import artifactsAragonACL from '../artifacts/aragon/ACL.json'
