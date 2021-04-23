@@ -4,7 +4,7 @@ import { getConfiguration } from '../../configuration'
 import * as configurationKeys from '../../configuration/keys'
 import { getEventNames } from '../../utils/events'
 
-const MAX_GAP = 1000 - 1
+const MAX_GAP = 100000 - 1
 
 export default class ContractProxy {
   constructor (address, jsonInterface, web3, { initializationBlock = 0 } = {}) {

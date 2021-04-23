@@ -3,7 +3,7 @@ import { delay, filter } from 'rxjs/operators'
 import { getConfiguration } from '../../configuration'
 import * as configurationKeys from '../../configuration/keys'
 import { getEventNames } from '../../utils/events'
-const MAX_GAP = 1000 - 1
+const MAX_GAP = 100000 - 1
 
 export function call (request, proxy, wrapper) {
   const web3 = wrapper.web3
