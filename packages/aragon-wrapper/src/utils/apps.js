@@ -1,7 +1,7 @@
 import { hash as namehash } from 'eth-ens-namehash'
 import { soliditySha3 } from 'web3-utils'
 
-export const apmAppId = appName => namehash(`${appName}.aragonpm.eth`)
+export const apmAppId = appName => namehash(`${appName}.aragonpm.cfx`)
 
 function findAppMethod (app, methodTestFn, { allowDeprecated } = {}) {
   const { deprecatedFunctions, functions } = app || {}
