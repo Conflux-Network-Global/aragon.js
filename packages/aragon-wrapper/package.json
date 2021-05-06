@@ -78,7 +78,7 @@
   "dependencies": {
     "@aragon/rpc-messenger": "^2.0.0",
     "@babel/runtime": "^7.1.2",
-    "@conflux-/aragon-os": "^4.4.2",
+    "@conflux-/aragon-os": "^4.4.4",
     "axios": "^0.19.0",
     "dot-prop": "^4.2.0",
     "eth-ens-namehash": "^2.0.8",
