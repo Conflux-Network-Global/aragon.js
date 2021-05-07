@@ -19,7 +19,7 @@ function sanitizeUrl (url) {
 
 export default class FileFetcher {
   constructor ({ ipfsGateway = '' } = {}) {
-    this.providers = new Map([['http']])
+    this.providers = new Map([['http'], ['https']])
 
     if (ipfsGateway) {
       this.providers.set('ipfs', { gateway: sanitizeUrl(ipfsGateway) })
